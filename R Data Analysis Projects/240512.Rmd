@@ -1,0 +1,111 @@
+---
+title: "tips 데이터를 이용한 선형 모델링과 예측"
+author: "202116927 오준석"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+library(scatterplot3d)
+library(dplyr)
+tips <- read.csv("tips.csv")
+tips
+```
+tips 데이터에 여러 변수가 포함되어 있으며, tip의 값을 구하기 위해 응답 변수는 tip으로 설정함.
+
+size를 설명 변수로 하는 그래프를 그림
+```{r}
+m=lm(tip~size, data=tips)
+summary(m)
+plot(tips$size, tips$tip)
+abline(m, col="red")
+deviance(m)/length(tips)
+```
+p값이 매우 작으므로 두 변수 간의 관계가 있다는 것을 알 수 있음
+
+
+다음으로 total_bill을 설명 변수로 하는 그래프를 그리면
+```{r}
+m=lm(tip~total_bill, data=tips)
+summary(m)
+plot(tips$total_bill, tips$tip)
+abline(m, col="red")
+deviance(m)/length(tips)
+```
+이때 역시 p값이 매우 작음. 이를 통해 tip은 total_bill과 size 모두와 관련이 있다고 볼 수 있음.
+
+
+세 개의 변수를 모두 이용한 3차원 그래프를 그려보면
+```{r}
+s=scatterplot3d(tips$total_bill, tips$size, tips$tip, type="h", pch=20)
+m=lm(tip~total_bill++size, data=tips)
+summary(m)
+s$plane3d(m)
+deviance(m)/length(tips)
+```
+앞선 과정을 통해 tip은 total_bill과 size와 연관이 있고 total_bill과 size를 모두 설명 변수로 하였을 때의 MSE가 가장 작음을 알 수 있었음.
+
+
+
+tips 데이터에는 위의 변수 외에도 sex, smoker, day, time의 변수가 존재함.
+total_bill과 size를 모두 설명 변수로 하여 sex에 따른 MSE를 알아보면
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(sex=="Female"))
+summary(m)
+deviance(m)/length(tips[tips$sex=="Female", ])
+```
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(sex=="Male"))
+summary(m)
+deviance(m)/length(tips[tips$sex=="male", ])
+```
+이를 통해 여성의 MSE가 낮음을 알 수 있음
+같은 방식으로 나머지 변수에 따른 MSE를 구하면
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(smoker=="Yes"))
+summary(m)
+deviance(m)/length(tips[tips$smoker=="Yes", ])
+```
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(smoker=="No"))
+summary(m)
+deviance(m)/length(tips[tips$smoker=="No", ])
+```
+ 흡연 여부 : 비흡연자의 MSE가 낮음
+ 
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(day=="Thur"))
+summary(m)
+deviance(m)/length(tips[tips$day=="Thur", ])
+```
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(day=="Fri"))
+summary(m)
+deviance(m)/length(tips[tips$day=="Fri", ])
+```
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(day=="Sat"))
+summary(m)
+deviance(m)/length(tips[tips$day=="Sat", ])
+```
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(day=="Sun"))
+summary(m)
+deviance(m)/length(tips[tips$day=="Sun", ])
+```
+ 요일별 : 금요일의 MSE가 가장 낮음
+ 
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(time=="Lunch"))
+summary(m)
+deviance(m)/length(tips[tips$time=="Lunch", ])
+```
+```{r}
+m=lm(tip~total_bill+size, data=tips%>%filter(time=="Dinner"))
+summary(m)
+deviance(m)/length(tips[tips$time=="Dinner", ])
+```
+시간대 : 점심의 MSE가 더 낮음
+
+이때 여성과 일요일의 함수에서만 size의 P값이 0.05 미만으로 나타나므로, 이 두 개의 함수에서만 size와 tip의 관계가 유의미함을 나타낸다고 할 수 있다.
+따라서 여성의 경우가 total_bill, size와 tip의 관계를 명확히 나타내며 MSE가 8.392083로 가장 작게 나타남을 알 수 있다.

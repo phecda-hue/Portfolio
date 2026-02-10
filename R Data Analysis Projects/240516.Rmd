@@ -1,0 +1,117 @@
+---
+title: '240516'
+author: "202116927 오준석"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+muffler=data.frame(discount=c(2, 4, 6, 8, 10), profit=c(0, 0, 0, 1, 1))
+plot(muffler, pch=20, cex=2, xlim=c(0, 12))
+```
+```{r}
+m=lm(profit~discount, data=muffler)
+coef(m)
+deviance(m)
+```
+```{r}
+plot(muffler, pch=20, cex=2, xlim=c(0, 12))
+abline(m, col="red")
+```
+
+```{r}
+g=glm(profit~discount, data=muffler, family=binomial)
+coef(g)
+deviance(g)
+```
+```{r}
+plot(muffler, pch=20, cex=2, xlim=c(0, 12))
+abline(g, col="blue")
+```
+
+```{r}
+newd=data.frame(discount=c(1, 5, 12, 20, 30))
+p=predict(g, newdata = newd, type="response")
+
+```
+
+
+```{r}
+haberman=read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/haberman/haberman.data", header=F)
+names(haberman)=c("age", "op_year", "no_nodes", "survival")
+
+haberman$survival=as.factor(haberman$survival)
+
+hgm=glm(survival~age+op_year+no_nodes, data=haberman, family=binomial)
+
+coef(hgm)
+deviance(hgm)
+
+summary(hgm)
+```
+hgm=glm(survival~. , data=haberman, family=binominal)
+```{r}
+haberman$survival=as.factor(haberman$survival)
+
+hgm=glm(survival~age+no_nodes, data=haberman, family=binomial)
+
+coef(hgm)
+deviance(hgm)
+
+summary(hgm)
+```
+
+```{r}
+haberman=read.table("haberman.data", header=F, sep=",")
+n=readLines("haberman.names")
+names(haberman) = substr(n, 4, nchar(n))
+```
+
+```{r}
+library(survival)
+View(colon)
+```
+
+```{r}
+colon%>%ggplot(aes(nodes, status))+geom_jitter(aes(col=factor(status)), width=0.1, height=0.1)
+```
+geom_jitter()은 산점도의 점 사이에 노이즈를 섞어 서로 구분될 수 있게 함
+geom_point()는 같은 x값을 갖는 점들이 모여 개수가 구분되지 않음
+
+결측치 제거
+```{r}
+clean_colon = clean_colon[c(TRUE, FALSE), ]
+clean_colon = na.omit(clean_colon)
+```
+
+환자가 중복되어 있으므로 데이터의 홀수 번째 행만 사용
+
+
+모든 변수를 모델에 포함
+```{r}
+formula="status~id+study+rx+sex+age+obstruct+perfor+adhere+nodes+differ+extent+surg+node4+time"
+
+cgm=glm(status~status~id+study+rx+sex+age+obstruct+perfor+adhere+nodes+differ+extent+surg+node4+time , data=clean_colon, family=binomial)
+coef(cgm)
+deviance(cgm)
+
+summary(cgm)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
