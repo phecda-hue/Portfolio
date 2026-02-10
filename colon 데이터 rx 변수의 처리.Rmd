@@ -1,0 +1,62 @@
+---
+title: "colon 데이터 rx 변수의 처리"
+author: "202116927 오준석"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+library(survival)
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+str(colon)
+?colon
+```
+
+colon 데이터에는 16개의 변수가 있는 것을 알 수 있음
+각각의 변수의 의미를 살펴보았을 때 id, study는 다른 변수와 상관관계가 없고, time과 etype은 결과를 알려주는 변수이므로 이를 제외하고 변수 간의 상관관계를 확인함
+
+또한 같은 ID를 갖는(같은 환자의) 각각의 변수는 time을 제외하고 모두 같은 값을 갖고 있으므로 이중 하나를 제외함
+```{r}
+clean_colon <- colon[c(TRUE, FALSE), ]
+```
+
+```{r}
+table(is.na(clean_colon))
+```
+데이터에 결측치가 있는 것이 확인되었으므로 이를 제거함
+```{r}
+clean_colon <- na.omit(clean_colon)
+table(is.na(clean_colon))
+```
+ggplot 함수를 이용해 rx와 변수들이 갖는 상관관계를 시각화
+```{r}
+p1 <- clean_colon%>%ggplot(aes(rx, nodes))+geom_jitter(aes(col=nodes, alpha=0.2), height=0.1, width=0.1)
+p2 <- clean_colon%>%ggplot(aes(rx, status))+geom_jitter(aes(col=factor(status), alpha=0.2), height=0.1, width=0.1)
+p3 <- clean_colon%>%ggplot(aes(rx, extent))+geom_jitter(aes(col=factor(extent), alpha=0.2), height=0.1, width=0.1)
+grid.arrange(p1, p2, p3, ncol=2, nrow=2)
+```
+
+이것만을 이용했을 때 각각의 변수들 간의 상관관계를 명확히 파악할 수 없으므로 glm 함수를 이용하여 rx와 status 간의 상관관계를 파악함
+
+```{r}
+m=glm(status~rx, data=clean_colon, family=binomial)
+summary(m)
+```
+이때 rx가 rxLev와 rxLev+5FU 두 개의 변수로 나뉘는 것을 볼 수 있음.
+
+ChatGPT를 이용하여 원핫 코드로 rx를 나타내는 함수를 만듦.
+ChatGPT가 제공한 함수에는 두 가지 변수를 추가하는 과정이 없으므로 이를 추가함.
+```{r}
+library(ModelMatrixModel)
+rx_onehot <- model.matrix(~ rx - 1, data = clean_colon)
+clean_colon_onehot <- cbind(clean_colon, rx_onehot)
+colnames(clean_colon_onehot)
+clean_colon_onehot$rxLev5FU <- clean_colon_onehot$"rxLev+5FU"
+m <- glm(status ~ rxLev + rxLev5FU, data = clean_colon_onehot, family = binomial)
+summary(m)
+```
+
+
+이때 원핫 인코딩을 사용하였음. rx는 세 개의 변수를 포함하는 범주형 변수인데, 일반적인 선형 모델에서는 세 가지 변수를 포함하는 범주형 변수를 사용할 수 없기 때문에 두 개로 분할된 rx를 따로 이진법으로 나타내어 선형화 가능한 형태로 만드는 것임. 이러한 과정을 통해 rx에서 분할된 각각의 변수와 status 사이의 상관관계를 모델링할 수 있게 됨.

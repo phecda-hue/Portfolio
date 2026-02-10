@@ -1,0 +1,58 @@
+---
+title: '240509'
+output: html_document
+date: "2024-05-09"
+---
+```{r}
+library(scatterplot3d)
+```
+
+```{r}
+women
+```
+
+```{r}
+m=lm(weight~height, data=women)
+m
+```
+mse(분산)보다 R-squared값이 모델의 정확도를 판단하기 좋음(0에서 1사이의 값, 1에 가까울수록 정확함)
+```{r}
+summary(m)
+deviance(m)/length(women)
+```
+```{r}
+plot(women)
+abline(m, col="red")
+```
+
+다중 선형 회귀
+```{r}
+x=c(3, 6, 3, 6)
+u=c(10, 10, 20, 20)
+y=c(4.65, 5.9, 6.7, 8.02)
+a=lm(y~x+u)
+summary(a)
+
+s=scatterplot3d(x, u, y, xlim=2:7, ylim=7:23, zlim=0:10, pch=20, type="h")
+
+s$plane3d(a)
+```
+
+trees 데이터에 대한 다중 선형 회귀
+```{r}
+trees
+```
+
+```{r}
+s=scatterplot3d(trees$Girth, trees$Height, trees$Volume)
+m=lm(Volume~Girth+Height, data=trees)
+m
+summary(m)
+s$plane3d(m)
+```
+
+```{r}
+ndata=data.frame(Girth=c(8.5, 13, 19), Height=c(72, 86, 85))
+predict(m, newdata=ndata)
+```
+
