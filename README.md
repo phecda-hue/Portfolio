@@ -9,4 +9,4 @@ This repository contains selected coursework projects and analysis notebooks.
     - Statistical analysis and visualization
 - Note:
     - Both .Rmd(source) and .html(rendered results) are included
-- Folder: 
+- Folder:  
