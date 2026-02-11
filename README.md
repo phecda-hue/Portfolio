@@ -17,8 +17,4 @@ This repository contains selected coursework projects and analysis notebooks.
     - Data preprocessing
     - Exploratory data analysis(EDA)
     - Basic machine learning workflows
-- Methods:
-    - 
-- Note:
-    - Files were reorganized and documented for clarity and reproducibility
 - Folder: Python Data Analysis Projects
